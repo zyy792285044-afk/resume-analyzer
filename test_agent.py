@@ -2,16 +2,21 @@
 """测试脚本：直接调用简历分析Agent"""
 import json
 import sys
+import os
+
+# 设置环境变量
+os.environ['COZE_WORKSPACE_PATH'] = '/workspace/projects'
+
 sys.path.insert(0, '/workspace/projects/src')
 
-from agents.agent import ResumeAnalysisAgent
+from agents.agent import build_agent
+from langchain_core.messages import HumanMessage
 
 # 创建Agent实例
-agent = ResumeAnalysisAgent()
+agent = build_agent()
 
 # 准备测试数据
-test_input = {
-    "resume_text": """
+resume_text = """
 张三，5年产品经验
 
 工作经历：
@@ -35,23 +40,55 @@ test_input = {
 
 教育背景：
 2014-2018 某大学 计算机科学 本科
-    """.strip(),
+""".strip()
+
+# 构建输入
+user_input = {
+    "resume_text": resume_text,
     "target_role": "AI产品经理",
     "candidate_level": "中级"
 }
 
+# 创建消息
+messages = [
+    HumanMessage(content=json.dumps(user_input, ensure_ascii=False, indent=2))
+]
+
 # 测试invoke方法
+print("=" * 80)
 print("测试 invoke 方法...")
-result = agent.invoke(test_input)
-print("\n=== 结果 ===")
-print(result.content)
+print("=" * 80)
 
-# 测试stream方法
-print("\n\n测试 stream 方法...")
-full_content = ""
-for chunk in agent.stream(test_input):
-    if chunk.content:
-        print(chunk.content, end="", flush=True)
-        full_content += chunk.content
+result = agent.invoke(
+    {"messages": messages},
+    config={"configurable": {"thread_id": "test_session_1"}}
+)
 
-print("\n\n=== 流式输出完成 ===")
+# 提取最后一条AI消息
+last_message = result["messages"][-1]
+print("\n=== 分析结果 ===")
+print(last_message.content)
+
+# 解析JSON
+try:
+    if "```json" in last_message.content:
+        content = last_message.content.split("```json")[1].split("```")[0].strip()
+    elif "```" in last_message.content:
+        content = last_message.content.split("```")[1].split("```")[0].strip()
+    else:
+        content = last_message.content
+    
+    result_json = json.loads(content)
+    print("\n=== 总分 ===")
+    print(f"总分: {result_json['step3_score_result']['total_score']}/100")
+    print(f"面试概率: {result_json['step3_score_result']['interview_probability']}")
+    
+    print("\n=== 3个致命问题 ===")
+    for i, issue in enumerate(result_json['step4_fatal_issues'], 1):
+        print(f"{i}. {issue['issue']}")
+        print(f"   原因: {issue['reason']}")
+    
+    print("\n=== 测试成功! ===")
+except Exception as e:
+    print(f"\n解析结果失败: {e}")
+    print("原始内容已输出")
