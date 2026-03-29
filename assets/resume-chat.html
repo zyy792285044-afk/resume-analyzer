@@ -20,6 +20,33 @@
             flex-direction: column;
         }
         
+        /* PC端适配：限制最大宽度 */
+        .header, .chat-container, .input-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        @media (min-width: 801px) {
+            body {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            }
+            
+            .header {
+                border-radius: 16px 16px 0 0;
+                margin-top: 20px;
+            }
+            
+            .chat-container {
+                background: white;
+                box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            }
+            
+            .input-container {
+                border-radius: 0 0 16px 16px;
+                margin-bottom: 20px;
+            }
+        }
+        
         /* 顶部导航 */
         .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);

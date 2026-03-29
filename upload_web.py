@@ -17,7 +17,7 @@ with open('assets/resume-chat.html', 'r', encoding='utf-8') as f:
 # 上传文件
 file_key = storage.upload_file(
     file_content=html_content.encode('utf-8'),
-    file_name="resume-chat.html",
+    file_name="resume-chat-v2.html",
     content_type="text/html",
 )
 
@@ -30,5 +30,5 @@ access_url = storage.generate_presigned_url(
 print(f"✅ 上传成功！")
 print(f"文件Key: {file_key}")
 print(f"访问链接: {access_url}")
-print(f"\n用户可以直接访问这个链接使用简历分析功能！")
+print(f"\nPC和移动端都可以访问使用！")
 print(f"有效期: 30天")
