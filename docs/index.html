@@ -611,8 +611,8 @@
                     const formData = new FormData();
                     formData.append('file', uploadedFile);
                     
-                    // 使用相对路径
-                    const uploadResponse = await fetch('/api/upload_file', {
+                    // 使用完整的后端地址（GitHub Pages不支持后端API）
+                    const uploadResponse = await fetch('https://4925fcc2-b204-42d1-b939-4f2b318b1d14.dev.coze.site/api/upload_file', {
                         method: 'POST',
                         body: formData
                     });
