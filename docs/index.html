@@ -540,14 +540,23 @@
         }
         
         // 文件上传处理
-        function handleFileUpload(event) {
+        async function handleFileUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
             
             uploadedFile = file;
             document.getElementById('fileName').textContent = file.name;
             document.getElementById('uploadPreview').classList.add('show');
-            showToast('文件已选择：' + file.name);
+            
+            // 检查文件类型
+            const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'];
+            if (!allowedTypes.includes(file.type) && !file.name.match(/\.(pdf|doc|docx|txt)$/i)) {
+                showToast('⚠️ 请上传PDF、Word或文本文件');
+                removeFile();
+                return;
+            }
+            
+            showToast('✅ 文件已选择：' + file.name);
         }
         
         // 移除文件
@@ -581,9 +590,70 @@
             let requestMessage = message;
             
             if (uploadedFile) {
-                userMessage = `📎 上传了文件：${uploadedFile.name}\n\n${message || '请分析这份简历'}`;
-                requestMessage = `用户上传了简历文件：${uploadedFile.name}\n\n注意：这是一个文件上传提示。请引导用户提供简历文本内容，或如果用户提供了PDF链接，请帮助分析。\n\n用户消息：${message || '请分析我的简历'}`;
+                userMessage = `📎 上传了文件：${uploadedFile.name}\n\n正在解析文件...`;
+                
+                // 显示用户消息
+                addMessage(userMessage, 'user');
+                
+                // 清空输入
+                input.value = '';
+                input.style.height = 'auto';
+                
+                // 显示加载动画
+                const loadingId = showTypingIndicator();
+                
+                try {
+                    // 上传文件到后端解析
+                    const formData = new FormData();
+                    formData.append('file', uploadedFile);
+                    
+                    const uploadResponse = await fetch('https://4925fcc2-b204-42d1-b939-4f2b318b1d14.dev.coze.site/api/upload_file', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    if (!uploadResponse.ok) {
+                        throw new Error(`上传失败: ${uploadResponse.status}`);
+                    }
+                    
+                    const uploadResult = await uploadResponse.json();
+                    
+                    if (!uploadResult.success) {
+                        throw new Error(uploadResult.detail || '解析失败');
+                    }
+                    
+                    // 移除加载动画
+                    removeTypingIndicator(loadingId);
+                    
+                    // 使用解析后的文本内容
+                    const parsedText = uploadResult.content;
+                    requestMessage = `用户上传了简历文件：${uploadedFile.name}
+
+简历内容已解析完成：
+
+${parsedText}
+
+${message ? '\n\n用户要求：' + message : '请分析这份简历'}`;
+                    
+                } catch (error) {
+                    removeTypingIndicator(loadingId);
+                    addMessage('抱歉，文件解析失败：' + error.message + '\n\n建议您直接复制粘贴简历文本内容。', 'ai');
+                    isLoading = false;
+                    document.getElementById('sendBtn').disabled = false;
+                    removeFile();
+                    return;
+                }
+            } else {
+                // 显示用户消息
+                addMessage(userMessage, 'user');
+                
+                // 清空输入
+                input.value = '';
+                input.style.height = 'auto';
             }
+            
+            // 显示加载动画
+            const loadingId = showTypingIndicator(); else {
             
             // 显示用户消息
             addMessage(userMessage, 'user');

@@ -36,6 +36,7 @@ from coze_coding_utils.openai.handler import OpenAIChatHandler
 from coze_coding_utils.log.parser import LangGraphParser
 from coze_coding_utils.log.err_trace import extract_core_stack
 from coze_coding_utils.log.loop_trace import init_run_config, init_agent_config
+from api.upload import router as upload_router
 
 
 # 超时配置常量
@@ -235,6 +236,9 @@ class GraphService:
 
 service = GraphService()
 app = FastAPI()
+
+# 注册文件上传路由
+app.include_router(upload_router, prefix="/api")
 
 # OpenAI 兼容接口处理器
 openai_handler = OpenAIChatHandler(service)
