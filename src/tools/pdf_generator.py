@@ -44,6 +44,43 @@ def generate_pdf_report(markdown_content: str, title: str = "resume_analysis_rep
 
 
 @tool
+def generate_optimized_resume_pdf(resume_content: str, title: str = "optimized_resume") -> str:
+    """
+    将优化后的简历内容转换为PDF文档。
+    
+    当用户要求下载优化后的简历时使用此工具。
+    用于生成优化后的完整简历PDF，而不是分析报告。
+    
+    Args:
+        resume_content: Markdown格式的优化后简历内容
+        title: PDF文档标题（英文，用于文件名生成，默认"optimized_resume"）
+    
+    Returns:
+        优化后的简历PDF下载链接（有效期24小时）
+    """
+    try:
+        # 配置PDF参数（A4纸张，适合简历）
+        pdf_config = PDFConfig(
+            page_size="A4",
+            left_margin=72,
+            right_margin=72,
+            top_margin=72,
+            bottom_margin=72
+        )
+        
+        # 创建客户端
+        client = DocumentGenerationClient(pdf_config=pdf_config)
+        
+        # 生成PDF
+        pdf_url = client.create_pdf_from_markdown(resume_content, title)
+        
+        return f"✅ 优化后的简历PDF已生成！\n\n📥 下载链接：{pdf_url}\n\n⏰ 链接有效期24小时，请及时下载"
+        
+    except Exception as e:
+        return f"❌ PDF生成失败: {str(e)}"
+
+
+@tool
 def generate_docx_report(markdown_content: str, title: str = "resume_analysis_report") -> str:
     """
     将Markdown格式的简历分析报告转换为Word文档。
