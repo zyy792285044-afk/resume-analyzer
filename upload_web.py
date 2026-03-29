@@ -11,13 +11,13 @@ storage = S3SyncStorage(
 )
 
 # 读取HTML文件
-with open('assets/resume-analyzer.html', 'r', encoding='utf-8') as f:
+with open('assets/resume-chat.html', 'r', encoding='utf-8') as f:
     html_content = f.read()
 
 # 上传文件
 file_key = storage.upload_file(
     file_content=html_content.encode('utf-8'),
-    file_name="resume-analyzer.html",
+    file_name="resume-chat.html",
     content_type="text/html",
 )
 
