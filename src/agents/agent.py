@@ -13,6 +13,7 @@ from langchain_core.messages import AnyMessage
 from coze_coding_utils.runtime_ctx.context import default_headers
 from storage.memory import get_memory_saver
 from tools.resume_parser import parse_resume_from_url, parse_resume_from_text
+from tools.pdf_generator import generate_pdf_report, generate_docx_report
 
 LLM_CONFIG = "config/agent_llm_config.json"
 
@@ -84,7 +85,7 @@ def build_agent(ctx=None):
     return create_agent(
         model=llm,
         system_prompt=cfg.get("sp"),
-        tools=[parse_resume_from_url, parse_resume_from_text],
+        tools=[parse_resume_from_url, parse_resume_from_text, generate_pdf_report, generate_docx_report],
         checkpointer=get_memory_saver(),
         state_schema=AgentState,
     )
